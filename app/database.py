@@ -27,3 +27,14 @@ class Database:
                 cursor.close()
             if "conn" in locals() and conn is not None:
                 conn.close()
+
+    def create_task_table(self):
+        query = """
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+        self.execute_query(query)
