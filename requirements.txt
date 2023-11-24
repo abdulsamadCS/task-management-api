@@ -1,3 +1,5 @@
 mysql-connector-python
 Flask
 Flask-BasicAuth
+pytest
+pytest-flask
