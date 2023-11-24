@@ -1,9 +1,13 @@
 from flask import Flask
+from flask_basicauth import BasicAuth
 
 from app.database import Database
 from app.views import tasks_bp
 
 app = Flask(__name__)
+app.config["BASIC_AUTH_USERNAME"] = "root"
+app.config["BASIC_AUTH_PASSWORD"] = "root"
+basic_auth = BasicAuth(app)
 
 # Create an instance of the Database class
 database = Database()

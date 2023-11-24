@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from flask.views import MethodView
+from flask_basicauth import BasicAuth
 
 from app.database import Database
 from app.helper_utils import validate_task_data
@@ -8,13 +9,16 @@ from app.models import Task
 db = Database()
 tasks_bp = Blueprint("tasks", __name__, url_prefix="/tasks")
 
+# Configure basic authentication
+basic_auth = BasicAuth()
+
 
 class TaskViewFactory:
     @staticmethod
     def create(is_list_view=True):
         if is_list_view:
-            return TaskListView.as_view("tasks")
-        return TaskDetailView.as_view("task")
+            return basic_auth.required(TaskListView.as_view("tasks"))
+        return basic_auth.required(TaskDetailView.as_view("task"))
 
 
 class TaskListView(MethodView):
