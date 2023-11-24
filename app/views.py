@@ -56,6 +56,14 @@ class TaskDetailView(MethodView):
 
     def put(self, task_id):
         try:
+            # Check if the task with the given ID exists
+            check_query = "SELECT * FROM tasks WHERE id = %s"
+            check_result = db.execute_query(
+                check_query, params=(task_id,), fetchone=True
+            )
+
+            if not check_result:
+                return jsonify({"message": "Task not found"}), 404
             updated_task = request.json
             validate_task_data(updated_task)
             query = "UPDATE tasks SET title = %s, description = %s WHERE id = %s"
