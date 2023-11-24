@@ -13,46 +13,46 @@ class TaskViewFactory:
     @staticmethod
     def create(is_list_view=True):
         if is_list_view:
-            return TaskListView.as_views("tasks")
-        return TaskDetailView.as_views("task")
+            return TaskListView.as_view("tasks")
+        return TaskDetailView.as_view("task")
 
 
 class TaskListView(MethodView):
     def get(self):
         try:
             query = "SELECT * FROM tasks"
-            results = db.execute_query(query)
+            results = db.execute_query(query) or {}
             tasks = [Task(**result).to_dict() for result in results]
             return jsonify(tasks), 200
         except Exception as e:
-            return {"error": str(e)}, 500
+            return jsonify({"error": str(e)}), 500
 
     def post(self):
         try:
             new_task = request.json
             validate_task_data(new_task)
             query = "Insert INTO tasks (title, description) VALUES (%s, %s)"
-            db.execute_query(query, (new_task["title"], new_task["description"]))
-            return {"messege": "Task added successfully"}, 201
+            db.execute_query(query, params=(new_task["title"], new_task["description"]))
+            return jsonify({"messege": "Task added successfully"}), 201
         except ValueError as ve:
-            return {"error": str(ve)}, 400
+            return jsonify({"error": str(ve)}), 400
         except Exception as e:
-            return {"error": str(e)}, 500
+            return jsonify({"error": str(e)}), 500
 
 
 class TaskDetailView(MethodView):
     def get(self, task_id):
         try:
             query = "SELECT * FROM tasks WHERE id = %s"
-            result = db.execute_query(query, (task_id,), fetchone=True)
+            result = db.execute_query(query, params=(task_id,), fetchone=True)
 
             if result:
                 task = Task(**result)
                 return jsonify(task.to_dict()), 200
             else:
-                return {"message": "Task not found"}, 404
+                return jsonify({"message": "Task not found"}), 404
         except Exception as e:
-            return {"error": str(e)}, 500
+            return jsonify({"error": str(e)}), 500
 
     def put(self, task_id):
         try:
@@ -60,22 +60,23 @@ class TaskDetailView(MethodView):
             validate_task_data(updated_task)
             query = "UPDATE tasks SET title = %s, description = %s WHERE id = %s"
             db.execute_query(
-                query, (updated_task["title"], updated_task["description"], task_id)
+                query,
+                params=(updated_task["title"], updated_task["description"], task_id),
             )
-            return {"message": "Task updated successfully"}, 200
+            return jsonify({"message": "Task updated successfully"}), 200
         except ValueError as ve:
-            return {"error": str(ve)}, 400
+            return jsonify({"error": str(ve)}), 400
         except Exception as e:
-            return {"error": str(e)}, 500
+            return jsonify({"error": str(e)}), 500
 
     def delete(self, task_id):
         try:
             query = "DELETE FROM tasks WHERE id = %s"
-            db.execute_query(query, (task_id,))
-            return {"message": "Task deleted successfully"}, 200
+            db.execute_query(query, params=(task_id,))
+            return jsonify({"message": "Task deleted successfully"}), 200
         except Exception as e:
-            return {"error": str(e)}, 500
+            return jsonify({"error": str(e)}), 500
 
 
 tasks_bp.add_url_rule("/<int:task_id>", view_func=TaskViewFactory.create(False))
-tasks_bp.add_url_rule("", view_func=TaskViewFactory.create(True))
+tasks_bp.add_url_rule("", view_func=TaskViewFactory.create(True), strict_slashes=False)
