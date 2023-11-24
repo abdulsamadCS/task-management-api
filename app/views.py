@@ -83,6 +83,15 @@ class TaskDetailView(MethodView):
 
     def delete(self, task_id):
         try:
+            # Check if the task with the given ID exists
+            check_query = "SELECT * FROM tasks WHERE id = %s"
+            check_result = db.execute_query(
+                check_query, params=(task_id,), fetchone=True
+            )
+
+            if not check_result:
+                return jsonify({"message": "Task not found"}), 404
+
             query = "DELETE FROM tasks WHERE id = %s"
             db.execute_query(query, params=(task_id,))
             return jsonify({"message": "Task deleted successfully"}), 200
