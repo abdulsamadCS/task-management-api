@@ -22,13 +22,17 @@ class Database:
         if self.conn:
             self.conn.close()
 
-    def execute_query(self, query, params=None, fetchone=False):
+    def execute_query(self, query, params=None, fetchone=False, return_id=False):
         try:
             self._connect()
             if params:
                 self.cursor.execute(query, params)
             else:
                 self.cursor.execute(query)
+            if return_id and query.lower().startswith("insert"):
+                last_inserted_id = self.cursor.lastrowid
+                self.conn.commit()
+                return last_inserted_id
             result = self.cursor.fetchone() if fetchone else self.cursor.fetchall()
             self.conn.commit()
             return result

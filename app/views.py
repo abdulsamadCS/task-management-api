@@ -36,8 +36,12 @@ class TaskListView(MethodView):
             new_task = request.json
             validate_task_data(new_task)
             query = "Insert INTO tasks (title, description) VALUES (%s, %s)"
-            db.execute_query(query, params=(new_task["title"], new_task["description"]))
-            return jsonify({"messege": "Task added successfully"}), 201
+            id = db.execute_query(
+                query,
+                params=(new_task["title"], new_task["description"]),
+                return_id=True,
+            )
+            return jsonify({"messege": "Task added successfully", "id": id}), 201
         except ValueError as ve:
             return jsonify({"error": str(ve)}), 400
         except Exception as e:
